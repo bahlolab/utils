@@ -1,6 +1,6 @@
 How to generate a table of contents for a markdown file
 =======================================================
-* Use `https://github.com/thlorenz/doctoc`:
+* Use https://github.com/thlorenz/doctoc
 
 ```bash
 npm install -g doctoc
