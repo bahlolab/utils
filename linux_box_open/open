@@ -3,6 +3,9 @@
 =head1
 Run the open command remotely on your Mac, replacing paths as required
 
+Written by Rick Tankard 4th Feb 2016. 
+Version 1.0 I guess. 
+
 The open command does as you would expect on the Mac. Now you can run the command on your Linux box and have the window open on your Mac. 
 
 In your .bash_profile (or .bash_rc) you must set the following variables:
@@ -15,6 +18,7 @@ export OPEN_MYMAC=mac01
 export OPEN_PATH_MAPS_FILE=~/.open_path_maps.txt
 
 You may set public-private keys if you wish to avoid SSH prompts.
+
 
 =cut
 
