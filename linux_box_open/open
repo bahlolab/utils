@@ -1,0 +1,82 @@
+#!/usr/bin/env perl
+
+=head1
+Run the open command remotely on your Mac, replacing paths as required
+
+The open command does as you would expect on the Mac. Now you can run the command on your Linux box and have the window open on your Mac. 
+
+In your .bash_profile (or .bash_rc) you must set the following variables:
+
+OPEN_MYMAC: the address of your local machine, (may require user name too, but at WEHI this is set the same)
+OPEN_PATH_MAPS: key-value pairs in format ${key}-${value}:${key2}-${value2}:..., where the key indicates the Linux box directory and value the mac directory
+
+for example:
+export OPEN_MYMAC=mac01
+export OPEN_PATH_MAPS_FILE=~/.open_path_maps.txt
+
+You may set public-private keys if you wish to avoid SSH prompts.
+
+=cut
+
+use 5.014;
+use warnings;
+use autodie;
+use Env;
+
+
+if(!defined($ENV{OPEN_MYMAC})) {
+    die "OPEN_MYMAC environment variable is not set.\n";
+}
+if(!defined($ENV{OPEN_PATH_MAPS_FILE})) {
+    die "OPEN_PATH_MAPS_FILE environment variable is not set.\n";
+}
+
+my %local_to_remote;
+open my $mapsf, '<', $ENV{OPEN_PATH_MAPS_FILE};
+while(<$mapsf>) {
+    chomp;
+    next if /^#/;
+    my @line = split "\t";
+    next if (@line == 0);
+    if(@line != 2) {
+        die "On line $. of %ENV{OPEN_PATH_MAPS_FILE} there is not exactly 2 items.\n";
+    }
+    $local_to_remote{$line[0]} = $line[1];
+}
+close $mapsf;
+
+
+# parse command line
+
+# TODO: look for --args as an option
+# TODO: do not change -b or -a items
+# TODO: with relative paths find absolute path
+
+my $file_start = 0;
+while($file_start < @ARGV && $ARGV[$file_start] =~ /^-/) {
+    $file_start++;
+}
+if($file_start == @ARGV) {
+    die "Did not find files in open";
+}
+
+my @pre;
+my @args;
+
+my @files = @ARGV;
+
+FILES: foreach my $file (@files) {
+    foreach my $local (keys %local_to_remote) {
+        if($file =~ s/^$local/$local_to_remote{$local}/) {
+            next FILES;
+        }
+    }
+    die "Could not find root path for $file\n";
+};
+
+my $open_command = "open " . join (" ", @files);
+say "Remote command: $open_command";
+my @command = ('ssh', $ENV{OPEN_MYMAC}, $open_command);
+system(@command) == 0
+        or die "system @command failed: $?";
+
