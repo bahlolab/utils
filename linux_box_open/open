@@ -25,8 +25,7 @@ You may set public-private keys if you wish to avoid SSH prompts.
 use 5.014;
 use warnings;
 use autodie;
-use Env qw(OPEN_MYMAC OPEN_PATH_MAPS_FILE);
-use Cwd;
+use Env qw(OPEN_MYMAC OPEN_PATH_MAPS_FILE PWD);
 
 
 if(!defined($OPEN_MYMAC)) {
@@ -87,11 +86,10 @@ foreach my $arg (@args) {
 }
 
 # Change file paths
-my $cwdir = getcwd;
 FILES: foreach my $file (@files) {
     if ($file !~ '^/') {
         # path is relative
-        $file = "$cwdir/$file";
+        $file = "$PWD/$file";
     }
     foreach my $local (keys %local_to_remote) {
         if($file =~ s/^$local/$local_to_remote{$local}/) {
