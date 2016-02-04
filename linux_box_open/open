@@ -93,6 +93,7 @@ FILES: foreach my $file (@files) {
     }
     foreach my $local (keys %local_to_remote) {
         if($file =~ s/^$local/$local_to_remote{$local}/) {
+            $file =~ s/(.*)/\"$1\"/;
             next FILES;
         }
     }
