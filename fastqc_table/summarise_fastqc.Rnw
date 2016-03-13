@@ -1,0 +1,116 @@
+\documentclass{article}
+\newcommand{\tc}[2]{\textcolor{#1}{#2}}
+\usepackage{xcolor}
+\definecolor{green}{RGB}{0, 180, 0} % default green is too light
+
+\begin{document}
+\title{FastQC Summary Table}
+\maketitle
+
+This script is used to create a coloured table summarising the output of
+FastQC from multiple FASTQ files.
+
+Let's have a look at a \texttt{summary.txt} file output by FastQC:
+
+<<setup, echo=FALSE>>=
+options(width = 80)
+@
+
+<<>>=
+readLines("fqc_output/S1_L001_R1_001_fastqc/summary.txt")
+@
+
+
+The following function reads in the summary.txt file output by a FastQC run
+for a single sample.
+<<f1>>=
+read_fastqc_summary <- function(fname, ...) {
+  read.table(file = fname, header = FALSE,
+             sep = "\t", stringsAsFactors = FALSE,
+             col.names = c("Verdict", "Test", "Filename"),...)
+  }
+@
+
+Now we can read in whichever files we want into a list. For example:
+<<>>=
+fqc_out_dir <- "fqc_output"
+sum_files <- list.files(fqc_out_dir, pattern = "summary.txt", recursive = TRUE)
+fnames <- sub("_fastqc/summary.txt", "", sum_files)
+
+# Now read in those files within a list
+list_of_sum_files <- setNames(object = vector("list", length = length(sum_files)),
+                              nm = fnames)
+
+list_of_sum_files[] <- lapply(file.path(fqc_out_dir, sum_files), read_fastqc_summary)
+head(list_of_sum_files, 2)
+@
+
+
+Just to confirm we've got what we think we've got, we can check that the
+dimensions of the data frames are correct:
+
+<<>>=
+# Check that they all have the same structure
+is_fqcsum_ok <- function(df) {
+  stopifnot(all(dim(df) == c(12, 3)))
+  res_vec <- c("PASS", "WARN", "FAIL")
+  stopifnot(all(df[[1]] %in% res_vec))
+  stopifnot(length(unique(df[[3]])) == 1)
+  TRUE
+}
+
+all(sapply(list_of_sum_files, is_fqcsum_ok))
+
+@
+
+Now we can rbind all the data frames into one big data frame:
+<<>>=
+big_df <- do.call("rbind", list_of_sum_files)
+head(big_df, 20)
+
+# Reshape into a wide format
+wide_df <- reshape(big_df, idvar = "Filename", timevar = "Test", direction = "wide")
+rownames(wide_df) <- NULL
+# Clean up the column names
+names(wide_df) <- sub("Verdict\\.", "", names(wide_df))
+head(wide_df)
+
+# Shorten up the column names
+
+shorten_colnames <- c(
+  "Filename" = "Fname",
+  "Basic Statistics" = "BS",
+  "Per base sequence quality" = "BSQ",
+  "Per tile sequence quality" = "TSQ",
+  "Per sequence quality scores" = "SQS",
+  "Per base sequence content" = "BSC",
+  "Per sequence GC content" = "SGCC",
+  "Per base N content" = "BNC",
+  "Sequence Length Distribution" = "SLD",
+  "Sequence Duplication Levels" = "SDL",
+  "Overrepresented sequences" = "OS",
+  "Adapter Content" = "AC",
+  "Kmer Content" = "KMER"
+)
+
+all(colnames(wide_df) == names(shorten_colnames))
+colnames(wide_df) <- shorten_colnames
+wide_df
+
+@
+
+Now perform magic:
+<<results="asis">>=
+# install.packages("xtable") # install xtable if not available
+require(xtable)
+xtab <- xtable::xtable(wide_df)
+
+xt <- capture.output(print(xtab, scalebox=0.78, include.rownames=FALSE))
+xt_mod1 <- gsub("PASS", "\\\\tc{green}{pass}", xt)
+xt_mod2 <- gsub("FAIL", "\\\\tc{red}{fail}", xt_mod1)
+xt_mod3 <- gsub("WARN", "\\\\tc{orange}{warn}", xt_mod2)
+cat(xt_mod3, sep="\n")
+@
+
+
+\end{document}
