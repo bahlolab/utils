@@ -7,4 +7,6 @@ npm install -g doctoc
 doctoc in_raw.md
 ```
 
-* You can also add a toc to multiple files in a directory and subdirectories.
+You can also add a toc to multiple files in a directory and subdirectories.
+
+* If you use vim, there's an awesome plugin: https://github.com/mzlogin/vim-markdown-toc
