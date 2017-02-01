@@ -12,9 +12,9 @@
 # https://gist.github.com/davetang/a7918eac9b030d09291a#file-transpose-pl
 #       AUTHOR: Peter Diakumis, diakumis@wehi.edu.au
 # ORGANIZATION: WEHI
-#      VERSION: 1.0
+#      VERSION: 1.01
 #      CREATED: 05/08/2015 12:05:42
-#     REVISION: ---
+#     REVISION: 22/01/2016 18:02
 #===============================================================================
 use strict;
 use warnings;
@@ -47,12 +47,7 @@ for my $row (@{$data}){
 }
 
 for my $row (@$t_data){
-   my $line_to_print = '';
-   for my $col (@{$row}){
-      $line_to_print .= "$col\t";
-   }
-   $line_to_print =~ s/\t$//;
-   print "$line_to_print\n";
+   print join("\t", @{$row}) . "\n";
 }
 
 exit(0);
