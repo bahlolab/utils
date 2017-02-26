@@ -2,8 +2,7 @@ Download Big Data with aria2
 ============================
 In short: use aria2 if you want to download big big data. See bash script in this directory.
 
-I have been downloading a huge amount of data (> 5TB) over the past few weeks
-from AGRF and DNAnexus.
+I have been downloading a huge amount of data (> 5TB) over the past few weeks.
 I downloaded the first few batches using the 'curl' command but found it to be
 quite a pain, especially when downloading big BAM files (>150GB). The
 connection to the download server would often get interrupted, resulting in
@@ -20,11 +19,11 @@ and its ability to split downloads into multiple connections means that it's
 really quick.
 One of the quirks with it though is that it needs a file containing the url
 of each file that needs to be downloaded (i.e. it can't download recursively
-given simply a folder name). DNAnexus provides this, but other places might
-not. AGRF were kind enough to provide it to me but for other services you'll
+given simply a folder name). Some places provide this, but other places might
+not. You'll
 probably need to construct this yourselves. Ask me if you don't know how to do
 this. I probably won't be able to help but it'll be fun nevertheless... Maybe
-you can hack into AGRF's ftp site through the command line and use `find` like
+you can hack into the ftp site through the command line and use `find` like
 it is suggested here:
 <http://stackoverflow.com/questions/98224/how-to-list-directory-content-of-remote-ftp-recursively/98234#98234>
 
